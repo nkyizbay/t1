@@ -1,0 +1,178 @@
+<html>
+  <head>
+    <!-- <link></link> -->
+    <meta charset="utf-8">
+    <title>game1</title>
+    <style>
+
+      body {
+        cursor: none;
+        overflow: hidden;
+      }
+
+      .figure {
+        width: 35px;
+        height: 35px;
+        background-size: cover;
+        background-color: red;
+        position: absolute;
+        left: 56;
+        bottom: 350px;
+        border-radius: 5px;
+      }
+
+      div {
+        position: fixed;
+        width: 455;
+        height: 350;
+        bottom: 0;
+        background: #000;
+      }
+
+      .static1 {
+        left: 0px;
+        /* visibility: hidden; */
+      }
+
+      .static2 {
+        width: 326; 
+        left: 605px; 
+        /* visibility: hidden; */
+      }
+
+      .static3 {
+        right: 0px;
+        /* visibility: hidden; */
+      }
+
+      .tr1 {
+        /* position: fixed; */
+        width: 150;
+        height: 150;
+        /* color: #000; */
+        left: 455px;
+        /* bottom: 0; */
+        background: pink;
+        /* transition: height 2s; */
+
+      }
+
+      .tr2 {
+        /* position: fixed; */
+        width: 150;
+        height: 150;
+        /* color: #000; */
+        right: 455px;
+        /* bottom: 0; */
+        background: pink;
+        /* transition: height 2s; */
+
+      }
+
+      .testClass {
+        left: 0;
+        height: 55;
+        width: 435;
+        position: fixed;
+        bottom: 350;
+        color: cyan;
+        border-style: solid;
+        border-width: 5;
+        overflow: hidden;
+      }
+
+    </style>
+  </head>
+
+
+  <body>
+
+    <p id="test">
+      <ol>
+        <li>Бірінші (басты) сессиядан: сол жақтағы платформаны Enter-ды басып көтеріңіз;</li>
+        <li>Қойындының дупликациясын жасап, екінші сессияны бастаңыз;</li>
+        <li>Екінші сессиядан: оң жақтағы платформаны Enter-ды басып көтеріңіз;</li>
+        <li>Бірінші сессияға (бірінші қойындыға) оралыңыз;</li>
+        <li>Пішінді қозғалтыңыз;</li>
+      </ol>
+
+      <ol>
+        <li>From first (main) session: press Enter to raise left platform;</li>
+        <li>Create second session opening duplicating tab;</li>
+        <li>From second session: press Enter to raise right platform;</li>
+        <li>Return to first session (first tab);</li>
+        <li>Move figure;</li>
+      </ol>
+      
+    </p>
+    <div id = "user-1" class="figure"></div>
+    <div class="static1"></div>
+    <div class="static2"></div>
+    <div class="static3"></div>
+
+    <div id="t1" class="tr1"></div>
+    <div id="t2" class="tr2"></div>
+
+    <!-- <div class="testClass"></div> -->
+
+    <script>
+
+      var url = "ws://" + window.location.host + "/ws"; // ws://localhost:5000/ws; handled by server
+      var ws = new WebSocket(url);  // establish a connection
+      var myid = "";
+
+      ws.onmessage = function (msg) { // data is sent from server to client: iam 1
+        var cmds = {"iam": iam, "setX": setX, "setH":setH};
+        if (msg.data) { // iam 1; set x
+          var parts = msg.data.split(" ") // ["iam", "1"];
+          var cmd = cmds[parts[0]]; // cmds["iam"]; 
+          if (cmd) {
+            cmd.apply(null, parts.slice(1));  // call iam() function with 1 as argument
+          }
+        }
+      };
+
+      function iam(id) {
+        if (id == "1") {
+          myid = id
+        } else {
+          myid = ""
+        }
+      }
+
+      function setX(x) {  // x 
+        var node = document.getElementById("user-1"); // get element with id user-1
+        
+        node.style.left = x + "px"; 
+      }
+
+      function setH(h) {
+        // var d = document.getElementById("t1");
+        if (myid == "") {
+          var d = document.getElementById("t1");
+        } else {
+          var d = document.getElementById("t2");
+        }
+        d.style.height = h;
+      }
+
+      document.onmousemove = function(e) {
+        if (myid == "1") {
+          setX(e.pageX);
+          ws.send([e.pageX, document.getElementById("t1").style.height].join(" ")); // ws.send("e.pageX document.getEl("t1")")
+        }
+      }
+
+      document.onkeydown = function(e) {
+          if (e.keyCode == 13 && myid == "1") {
+            document.getElementById("t1").style.height = "350px";
+          } else if (e.keyCode == 13 && myid !== "1") {
+            document.getElementById("t2").style.height = "350px";
+            ws.send([e.pageX, document.getElementById("t2").style.height].join(" ")); // ws.send("e.pageX document.getEl("t2")")
+          }
+      }
+
+    </script>
+
+  </body>
+</html>
